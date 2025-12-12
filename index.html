@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>お知らせ一覧 | GitHub Pages</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 20px;
+    background:#f8f8f8;
+  }
+  h1 {
+    color:#333;
+  }
+  .notice {
+    background:white;
+    padding:16px;
+    margin-bottom:12px;
+    border-radius:8px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  }
+  .date {
+    font-size: 0.85em;
+    color:#666;
+  }
+</style>
+</head>
+<body>
+
+<h1>お知らせ</h1>
+<div id="notices">読み込み中...</div>
+
+<script>
+async function loadNotices() {
+  const container = document.getElementById("notices");
+
+  try {
+    const res = await fetch("./data/notices.json", { cache: "no-store" });
+
+    if (!res.ok) {
+      container.innerHTML = "データを読み込めませんでした。";
+      return;
+    }
+
+    const notices = await res.json();
+
+    if (!Array.isArray(notices) || notices.length === 0) {
+      container.innerHTML = "現在お知らせはありません。";
+      return;
+    }
+
+    // createdAt の降順（新しい順）
+    notices.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    container.innerHTML = ""; // 初期文言削除
+
+    notices.forEach(n => {
+      const div = document.createElement("div");
+      div.className = "notice";
+
+      div.innerHTML = `
+        <div class="date">${new Date(n.createdAt).toLocaleString("ja-JP")}</div>
+        <p>${n.body.replace(/\n/g, "<br>")}</p>
+      `;
+
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "エラーが発生しました。";
+  }
+}
+
+loadNotices();
+</script>
+
+</body>
+</html>
